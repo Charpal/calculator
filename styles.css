@@ -1,0 +1,53 @@
+body{
+    position: relative;
+    background: #E5CE94;
+}
+
+#calculator{
+    display: flex;
+    flex-wrap: wrap;
+    border: 12px solid #122D4A;
+    border-radius: 4px;
+    width: 20%;
+    margin: 0 auto;
+
+}
+
+#calculator > .display{
+    background: #95D8BF;
+    flex: 0 0 100%;
+    font-size: 2em;
+    border-bottom: groove;
+    text-align: right;
+    height: 50px;
+}
+
+#calculator > button{
+    flex: 1 1 33.3333%;
+    font-size: 2em;
+    border-radius: 0px;
+}
+
+#calculator > button:hover{
+    opacity: 0.8;
+}
+
+#calculator > .op{
+    background: #08435D;
+}
+
+#calculator > .digit{
+    background: #1ea6a8;
+}
+
+#calculator > .decPoint{
+    background: #1ea6a8;
+}
+
+#calculator > .backspace-btn{
+    background: #1ea6a8;
+}
+
+#calculator > .clr-btn{
+    background: #EF6145;
+}
