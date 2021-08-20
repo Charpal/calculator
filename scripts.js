@@ -1,9 +1,9 @@
-//Flags
+//Flags and size limit
 let initialized = false;
-let usedOperator = false;
+let operatorInUse = false;
 let backspaceFlag = true;
-const roundFactor = 100000000;
-const calculatorLimit = 99999999999999;
+const roundFactor = 10000000000000;
+const calculatorUpperLimit = 99999999999999;
 
 //Basic Operations
 function add(a, b){
@@ -43,12 +43,8 @@ function operate(operator, a, b){
 
 const display = document.querySelector('.display');
 const digits = document.querySelectorAll(".digit");
-let numCache = {
-    prevNum: 0,
-    curNum: 0,
-};
-let prevOp = '';
 
+//Check if the user has begun using the calculator and erase the default display
 function checkInitialized(){
     if (!initialized){
         initialized = true;
@@ -56,38 +52,36 @@ function checkInitialized(){
     }
 }
 
+//Check if the user has previously used an operator and allow the user to backspace if so
 function checkPrevOperator() {
-    if (usedOperator){
-        usedOperator = false;
+    if (operatorInUse){
+        operatorInUse = false;
         backspaceFlag = true;
         return true;
     }
     return false;
 }
 
+//DIGITS
+//Holds previous and current numbers for operation
+let numCache = {
+    prevNum: 0,
+    curNum: 0,
+};
+
+//Display the digit the user pressed depending on whether a previous operator is stored and if the display is under the size limit
 function displayDigit(currentDisplay){
-    if(display.textContent.length <= 11){
-        checkInitialized();
-        
-        if (checkPrevOperator()){
-            //if previous button was an operator, clear out display and add number
-            numCache.prevNum = numCache.curNum;
-            numCache.curNum = currentDisplay;
-            display.textContent = numCache.curNum;
-        }
-        else {
-            numCache.curNum += currentDisplay;
-            display.textContent += currentDisplay;
-        }
-        // console.table(numCache);
+    checkInitialized();
+    if (checkPrevOperator()){
+        numCache.prevNum = numCache.curNum;
+        numCache.curNum = currentDisplay;
+        display.textContent = numCache.curNum;
     }
-    else {
-        if (checkPrevOperator()){
-            numCache.prevNum = numCache.curNum;
-            numCache.curNum = currentDisplay;
-            display.textContent = numCache.curNum;
-        }
+    else if (display.textContent.length <= String(calculatorUpperLimit).length){
+        numCache.curNum += currentDisplay;
+        display.textContent += currentDisplay;
     }
+    console.table(numCache);
 }
 
 digits.forEach((digit) => {
@@ -96,11 +90,15 @@ digits.forEach((digit) => {
     });
 });
 
+//DECIMAL POINT
 const decimalPoint = document.querySelector('.decPoint');
-let pointOn = false;
+let decimalPointFlag = false;
+
+//Display the decimal point depending on if there's a stored operator
 function displayDecimalPoint(){
-    if (!pointOn){
-        pointOn = true;
+    checkInitialized();
+    if (!decimalPointFlag){
+        decimalPointFlag = true;
         if(checkPrevOperator()){
             numCache.prevNum = numCache.curNum;
             numCache.curNum = '0.';
@@ -117,35 +115,34 @@ decimalPoint.addEventListener('click', ()=>{
     displayDecimalPoint();
 });
 
+//OPERATIONS
+//Stored operator
+let prevOp = '';
+
 const operations = document.querySelectorAll('.op');
+//Calculate the expression and displays it
 function calculateOperations(operator){
     let curOp = operator;
-        if(usedOperator){
-            prevOp = curOp;
-            return;
-        }
-        usedOperator = true;
-        backspaceFlag = false;
-        pointOn = false;
-        // console.log("Previously used: " + prevOp);
-        // console.log("Currently using: " + curOp);
-        if (prevOp === '' || prevOp === '='){
-
-        }
-        else {
-            let result = operate(prevOp, numCache.prevNum, numCache.curNum);
-            result = Math.round(result * roundFactor) / roundFactor;
-            if (result > calculatorLimit){
-                display.textContent = 'ERROR';
-            }
-            else{
-                numCache.curNum = result;
-                // console.log("Result: " + result);
-                display.textContent = result;
-            }
-            
-        }
+    if(operatorInUse){
         prevOp = curOp;
+        return;
+    }
+
+    operatorInUse = true;
+    backspaceFlag = false;
+    decimalPointFlag = false;
+    if (prevOp === '' || prevOp === '='){
+        //do nothing
+    }
+    else {
+        let result = operate(prevOp, numCache.prevNum, numCache.curNum);
+        //Round decimals
+        console.log(result);
+        result = Math.round(result * roundFactor) / roundFactor;
+        numCache.curNum = result;
+        display.textContent = result;
+    }
+    prevOp = curOp;
 }
 operations.forEach((operation) => {
     operation.addEventListener('click', function(e) {
@@ -153,11 +150,14 @@ operations.forEach((operation) => {
     });
 });
 
+//BACKSPACE
 const backspace = document.querySelector('.backspace-btn');
+//Delete the rightmost digit in display and cache
 function deleteDigit(){
     if (backspaceFlag){
         numCache.curNum = numCache.curNum.toString().slice(0, -1);
         display.textContent = display.textContent.slice(0, -1);
+        //If empty display, automatically put a 0 instead
         if(display.textContent === ''){
             numCache.curNum = 0;
             display.textContent = '0';
@@ -169,18 +169,21 @@ backspace.addEventListener('click', () => {
     deleteDigit();
 });
 
+//CLEAR
 const clrbtn = document.querySelector('.clr-btn');
+//Reset everything to default
 function clearAll(){
     display.textContent = 0;
     numCache.prevNum = 0;
     numCache.curNum = 0;
     prevOp = '';
-    pointOn = false;
+    decimalPointFlag = false;
 }
 clrbtn.addEventListener('click', () => {
     clearAll();
 });
 
+//Keyboard functionality
 document.addEventListener('keydown', function(e) {
     switch(true){
         case (Number(e.key) >=0 && Number(e.key) <= 9):
@@ -201,5 +204,4 @@ document.addEventListener('keydown', function(e) {
         default:
             break;
     }
-    // console.log(e.key);
 });

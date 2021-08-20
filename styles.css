@@ -3,12 +3,25 @@ body{
     background: #E5CE94;
 }
 
+h1, h2{
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+h1{
+    font-size: 3.0rem;
+}
+
+h2{
+    font-size: 2.0rem;
+}
+
 #calculator{
     display: flex;
     flex-wrap: wrap;
     border: 12px solid #122D4A;
     border-radius: 4px;
-    width: 20%;
+    max-width: 25vw;
+    width: auto;
     margin: 0 auto;
 
 }
